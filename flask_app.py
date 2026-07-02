@@ -59,6 +59,26 @@ def rapport():
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             output_path = tmp.name
 
+        if 'besparing_jaar1' not in data and 'voordeel_jaar1' in data:
+            try:
+                data['besparing_jaar1'] = '➬ ' + f"{int(float(data['voordeel_jaar1'])):,}".replace(',', '.')
+            except:
+                data['besparing_jaar1'] = str(data['voordeel_jaar1'])
+        raw_voordeel = data.get("voordeel_jaar1")
+        try:
+            if isinstance(raw_voordeel, str):
+                cleaned = raw_voordeel.strip()
+                cleaned = cleaned.replace("€", "").replace(" ", "")
+                if "," in cleaned and "." in cleaned:
+                    cleaned = cleaned.replace(".", "").replace(",", ".")
+                elif "," in cleaned:
+                    cleaned = cleaned.replace(",", ".")
+                voordeel = float(cleaned)
+            else:
+                voordeel = float(raw_voordeel or 0)
+            data["rendabel"] = "JA" if voordeel >= 1000 else "NEE"
+        except Exception:
+            data["rendabel"] = "NEE"
         generate_rapport(data, output_path)
 
         # PDF inlezen voor de base64 (zoals voorheen, voor de e-mail)
